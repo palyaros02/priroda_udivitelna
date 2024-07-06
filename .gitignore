@@ -14,3 +14,5 @@ weights/classification/resnet18.pt
 table.csv
 table_agg.csv
 table_final.csv
+
+*.sqlite
