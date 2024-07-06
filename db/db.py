@@ -6,7 +6,6 @@ from sqlalchemy.orm import sessionmaker, relationship
 Base = declarative_base()
 
 class Image(Base):
-    __tablename__ = 'images'
     id = Column(Integer, primary_key=True)
     registration_id = Column(Integer, ForeignKey('registrations.id'), nullable=True)
     folder_name = Column(String)
@@ -16,11 +15,8 @@ class Image(Base):
     registration_class = Column(String) # fixed class_predict
     registration_date = Column(DateTime)
     count = Column(Integer)
-<<<<<<< Updated upstream
-=======
     max_count = Column(Integer)
     registration = relationship('Registration', back_populates = 'images')
->>>>>>> Stashed changes
 
 class Registration(Base):
     __tablename__ = 'registrations'
@@ -42,14 +38,11 @@ class DB:
         self.Session = sessionmaker(bind=self.engine)
         self.session = self.Session()
 
-<<<<<<< Updated upstream
     def add_image(self, folder_name, image_name, class_predict, confidence, registration_class, registration_date, count):
         image = Image(folder_name=folder_name, image_name=image_name, class_predict=class_predict, registration_class=registration_class, registration_date=registration_date, count=count, confidence=confidence)
-=======
     def add_image(self, folder_name: str, image_name: str, class_predict: str, registration_class: str, registration_date: str, count: int, max_count: int):
         registration_date = datetime.strptime(registration_date, "%Y-%m-%d %H:%M:%S")
         image = Image(folder_name=folder_name, image_name=image_name, class_predict=class_predict, registration_class=registration_class, registration_date=registration_date, count=count, max_count=max_count)
->>>>>>> Stashed changes
         self.session.add(image)
         self.session.commit()
 
