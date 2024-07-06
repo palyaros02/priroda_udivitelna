@@ -10,7 +10,7 @@ def calculate_minutes_difference(date1_str: str, date2_str: str) -> float:
     return difference_in_minutes
 
 data = pd.read_csv(r'priroda_udivitelna\data\registration.csv')  
-
+data.dropna(inplace=True)
 results = []
 
 for folder, group in data.groupby('name_folder'):
@@ -39,7 +39,7 @@ for folder, group in data.groupby('name_folder'):
                     'class': current_class,
                     'date_registration_start': start_time,
                     'date_registration_end': end_time,
-                    'count': min(max_count, 5)
+                    'count': min(int(max_count), 5)
                 })
                 current_registration = row['registration_class']
                 current_class = row['class_predict']
@@ -53,7 +53,7 @@ for folder, group in data.groupby('name_folder'):
             'class': current_class,
             'date_registration_start': start_time,
             'date_registration_end': end_time,
-            'count': min(max_count, 5)  # Ограничиваем max_count до 5
+            'count': min(int(max_count), 5)  # Ограничиваем max_count до 5
         })
 
 result_df = pd.DataFrame(results)
