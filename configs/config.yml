@@ -1,5 +1,5 @@
-src_dir: "../data/traps/1"
-mapping: "class_map_animal.txt"
+src_dir: "data/traps/1"
+mapping: "model/class_map_animal.txt"
 device: cuda
 dst_save_table: "data/table.csv"
 
@@ -8,7 +8,7 @@ logger:
   log_file: "log.txt"
 
 detector:
-  weights: "weights/detection/yolov8n.pt"
+  weights: "model/weights/detection/yolov8n.pt"
   batch_size: 1
   iou: 0.45
   conf: 0.4
@@ -17,7 +17,7 @@ detector:
     - 640
 
 classificator:
-  weights: "weights/classification/efficientnet_b0.pt"
+  weights: "model/weights/classification/efficientnet_b0.pt"
   batch_size: 8
   imgsz:
     - 288
