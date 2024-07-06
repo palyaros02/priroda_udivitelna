@@ -113,6 +113,7 @@ if len(pathes_to_imgs):
                 # Inference classificator
                 for img_name, batch_images_cls in dict_crops.items():
                     # if len(batch_images_cls) > classificator_config.batch_size:
+                    exif = exifs[pathes_to_imgs.index(Path(config.src_dir) / img_name)]
                     num_packages_cls = np.ceil(len(batch_images_cls) / classificator_config.batch_size).astype(
                         np.int32)
                     for j in range(num_packages_cls):
@@ -127,8 +128,8 @@ if len(pathes_to_imgs):
                         top_class_idx = top_class_idx.cpu().numpy().ravel()
 
                         class_names = [mapping[top_class_idx[idx]] for idx, _ in enumerate(batch_images_cls)]
-                        list_predictions.extend([[folder_name, name, cls, prob, '--', exif] for name, cls, prob, exif in
-                                                    zip(repeat(img_name, len(class_names)), class_names, top_p, exifs)])
+                        list_predictions.extend([[folder_name, name, cls, prob, '--', exif] for name, cls, prob in
+                                                    zip(repeat(img_name, len(class_names)), class_names, top_p)])
 
     # Create Dataframe with predictions
     table = pd.DataFrame(list_predictions, columns=["folder_name", "image_name", "class_predict", "confidence", "registration_class", "registration_date"])
