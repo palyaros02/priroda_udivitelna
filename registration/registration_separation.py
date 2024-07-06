@@ -1,4 +1,3 @@
-
 import pandas as pd
 from datetime import datetime
 
@@ -10,7 +9,6 @@ def calculate_minutes_difference(date1_str: str, date2_str: str) -> float:
     difference_in_minutes = time_difference.total_seconds() / 60
     return difference_in_minutes
 
-
 data = pd.read_csv(r'priroda_udivitelna\data\registration.csv')  
 
 results = []
@@ -21,7 +19,7 @@ for folder, group in data.groupby('name_folder'):
     current_class = None
     start_time = None
     end_time = None
-    count = 0
+    max_count = 0
     
     for i, row in group.iterrows():
         if current_registration is None:
@@ -29,25 +27,25 @@ for folder, group in data.groupby('name_folder'):
             current_class = row['class_predict']
             start_time = row['date_registration']
             end_time = row['date_registration']
-            count = row['count']
+            max_count = row['count']
         else:
-            time_diff = calculate_minutes_difference(start_time, end_time)
+            time_diff = calculate_minutes_difference(end_time, row['date_registration'])
             if (time_diff <= 30 and row['class_predict'] == current_class) or pd.isna(row['count']):
                 end_time = row['date_registration']
+                max_count = max(max_count, row['count'])
             else:
                 results.append({
                     'folder_name': folder,
                     'class': current_class,
                     'date_registration_start': start_time,
                     'date_registration_end': end_time,
-                    'count': count
+                    'count': min(max_count, 5)
                 })
                 current_registration = row['registration_class']
                 current_class = row['class_predict']
                 start_time = row['date_registration']
                 end_time = row['date_registration']
-                count = row['count']
-
+                max_count = row['count']
 
     if current_registration is not None:
         results.append({
@@ -55,10 +53,10 @@ for folder, group in data.groupby('name_folder'):
             'class': current_class,
             'date_registration_start': start_time,
             'date_registration_end': end_time,
-            'count': count
+            'count': min(max_count, 5)  # Ограничиваем max_count до 5
         })
-
 
 result_df = pd.DataFrame(results)
 result_df.to_csv(r'priroda_udivitelna\data\registration_results.csv', index=False)
 
+print(result_df.head(50))
