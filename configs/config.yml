@@ -1,6 +1,6 @@
 src_dir: "data/traps/1"
 mapping: "model/class_map_animal.txt"
-device: cuda
+device: cpu
 dst_save_table: "data/table.csv"
 
 logger:
