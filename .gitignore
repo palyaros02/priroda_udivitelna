@@ -1,0 +1,16 @@
+traps/
+
+__pycache__/
+**/__pycache__
+data/.DS_Store/
+classes_car.txt
+data_full/
+.idea/
+.venv/
+.vscode/
+weights_cars/
+data_cars/
+weights/classification/resnet18.pt
+table.csv
+table_agg.csv
+table_final.csv
