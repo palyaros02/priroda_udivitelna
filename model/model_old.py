@@ -5,9 +5,15 @@ import os
 import torch
 import numpy as np
 from tqdm import tqdm
-from utils.utils import load_detector, load_classificator, open_mapping, extract_crops
 import pandas as pd
 from itertools import repeat
+from ultralytics import YOLO
+from ultralytics.engine.results import Results
+from torchvision.transforms.functional import normalize
+import cv2
+
+MEAN = [123.675, 116.28, 103.535]
+STD = [58.395, 57.12, 57.375]
 
 
 def main():
@@ -19,7 +25,15 @@ def main():
     pathes_to_imgs = [i for i in Path(main_config.src_dir).glob("*")
                       if i.suffix.lower() in [".jpeg", ".jpg", ".png"]]
 
+    folder_name = Path(main_config.src_dir).name.split("/")[-1]
+
     # Load mapping for classification task
+    def open_mapping(path_mapping: str) -> dict[int, str]:
+        with open(path_mapping, 'r') as txt_file:
+            lines = txt_file.readlines()
+            lines = [i.strip() for i in lines]
+            dict_map = {k: v for k, v in enumerate(lines)}
+        return dict_map
     mapping = open_mapping(path_mapping=main_config.mapping)
 
     # Separate main config
@@ -27,8 +41,40 @@ def main():
     classificator_config = main_config.classificator
 
     # Load models
+    def load_detector(config: BaseConfig):
+        # Loading YOLOv8 weights
+        model = YOLO(config.weights)
+        return model
     detector = load_detector(detector_config).to(device)
+
+    def load_classificator(config: BaseConfig):
+        # Loading timm model
+        model = torch.load(config.weights)
+        model.eval()
+        return model
     classificator = load_classificator(classificator_config).to(device)
+
+    def extract_crops(results: list[Results], config: BaseConfig) -> dict[str, torch.Tensor]:
+        dict_crops = {}
+        for res_per_img in results:
+            if len(res_per_img) > 0:
+                crops_per_img = []
+                for box in res_per_img.boxes:
+                    x0, y0, x1, y1 = box.xyxy.cpu().numpy().ravel().astype(np.int32)
+                    crop = res_per_img.orig_img[y0: y1, x0: x1]
+
+                    # Do squared crop
+                    # crop = letterbox(img=crop, new_shape=config.imgsz, color=(0, 0, 0))
+                    crop = cv2.resize(crop, config.imgsz, interpolation=cv2.INTER_LINEAR)
+
+                    # Convert Array crop to Torch tensor with [batch, channels, height, width] dimensions
+                    crop = torch.from_numpy(crop.transpose(2, 0, 1))
+                    crop = crop.unsqueeze(0)
+                    crop = normalize(crop.float(), mean=MEAN, std=STD)
+                    crops_per_img.append(crop)
+
+                dict_crops[Path(res_per_img.path).name] = torch.cat(crops_per_img) # if len(crops_per_img) else None
+        return dict_crops
 
     # Inference
     if len(pathes_to_imgs):
