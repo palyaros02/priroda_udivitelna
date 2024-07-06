@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker, relationship
 Base = declarative_base()
 
 class Image(Base):
+    __tablename__ = 'images'
     id = Column(Integer, primary_key=True)
     registration_id = Column(Integer, ForeignKey('registrations.id'), nullable=True)
     folder_name = Column(String)
