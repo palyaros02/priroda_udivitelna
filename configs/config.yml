@@ -1,7 +1,11 @@
-src_dir: "data"
+src_dir: "../data/traps/1"
 mapping: "class_map_animal.txt"
 device: cuda
 dst_save_table: "data/table.csv"
+
+logger:
+  log_dir: "logs"
+  log_file: "log.txt"
 
 detector:
   weights: "weights/detection/yolov8n.pt"

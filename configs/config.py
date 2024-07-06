@@ -1,5 +1,6 @@
-from confz import BaseConfig
 from typing import Tuple
+
+from confz import BaseConfig
 
 
 class DetectorArgs(BaseConfig):
@@ -16,9 +17,15 @@ class ClassificatorArgs(BaseConfig):
     batch_size: int
 
 
+class LoggerArgs(BaseConfig):
+    log_file: str
+    log_dir: str
+
+
 class MainConfig(BaseConfig):
     src_dir: str
     mapping: str
     device: str
     detector: DetectorArgs
+    logger: LoggerArgs
     classificator: ClassificatorArgs
