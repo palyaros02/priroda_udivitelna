@@ -11,3 +11,4 @@ opencv-python
 timm==0.9.16
 sqlalchemy
 loguru
+pyside6
