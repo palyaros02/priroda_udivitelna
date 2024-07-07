@@ -14,20 +14,23 @@ class Image(Base):
     class_predict = Column(String)
     confidence = Column(Float)
     registration_class = Column(String) # fixed class_predict
-    registration_date = Column(DateTime)
+    registration_date = Column(String)
     count = Column(Integer)
     max_count = Column(Integer)
-    registration = relationship('Registration', back_populates = 'images')
+
+    registration = relationship("Registration", back_populates="images", uselist=False, single_parent=True, cascade="all, delete-orphan", passive_deletes=True, foreign_keys=[registration_id])
 
 class Registration(Base):
     __tablename__ = 'registrations'
     id = Column(Integer, primary_key=True)
     folder_name = Column(String)
     class_name = Column(String)
-    date_registration_start = Column(DateTime) # fixed class_predict
-    date_registration_end = Column(DateTime)
+    date_registration_start = Column(String) # fixed class_predict
+    date_registration_end = Column(String)
     max_count = Column(Integer)
-    image = relationship('Image', back_populates = 'registrations')
+
+    #it is parent in many-to-one relationship
+    images = relationship("Image", back_populates="registration", cascade="all, delete-orphan", passive_deletes=True)
 
 class DB:
     def __init__(self):
@@ -39,11 +42,11 @@ class DB:
         self.Session = sessionmaker(bind=self.engine)
         self.session = self.Session()
 
-    def add_image(self, folder_name, image_name, class_predict, confidence, registration_class, registration_date, count):
-        image = Image(folder_name=folder_name, image_name=image_name, class_predict=class_predict, registration_class=registration_class, registration_date=registration_date, count=count, confidence=confidence)
-    def add_image(self, folder_name: str, image_name: str, class_predict: str, registration_class: str, registration_date: str, count: int, max_count: int):
-        registration_date = datetime.strptime(registration_date, "%Y-%m-%d %H:%M:%S")
-        image = Image(folder_name=folder_name, image_name=image_name, class_predict=class_predict, registration_class=registration_class, registration_date=registration_date, count=count, max_count=max_count)
+    # fixme
+    def add_image(self, folder_name, image_name, class_predict, confidence, registration_class, registration_date, count, max_count=-1):
+        registration_date = datetime.strptime(registration_date, "%Y:%m:%d %H:%M:%S")
+        registration_date = datetime.strftime(registration_date, "%Y-%m-%d %H:%M:%S")
+        image = Image(folder_name=folder_name, image_name=image_name, class_predict=class_predict, registration_class=registration_class, registration_date=registration_date, count=count, max_count=max_count, confidence=confidence)
         self.session.add(image)
         self.session.commit()
 
@@ -51,7 +54,7 @@ class DB:
         date_format = "%Y-%m-%d %H:%M:%S"
         date_registration_start = datetime.strptime(date_registration_start, date_format)
         date_registration_end = datetime.strptime(date_registration_end, date_format)
-            
+
         registration = Registration(folder_name=folder_name, class_name=class_name, date_registration_start=date_registration_start, date_registration_end=date_registration_end, max_count=max_count)
         self.session.add(registration)
         self.session.commit()
