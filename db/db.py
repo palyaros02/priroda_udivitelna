@@ -16,7 +16,6 @@ class Image(Base):
     registration_class = Column(String) # fixed class_predict
     registration_date = Column(String)
     count = Column(Integer)
-    max_count = Column(Integer)
 
     registration = relationship("Registration", back_populates="images", uselist=False, single_parent=True, cascade="all, delete-orphan", passive_deletes=True, foreign_keys=[registration_id])
 

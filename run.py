@@ -3,6 +3,7 @@ from utils.logger import Logger
 from db.db import DB
 from configs.config import MainConfig
 from confz import BaseConfig, FileSource
+from registration_separation import process_data, calculate_minutes_difference
 # other imports
 from pathlib import Path
 import os
@@ -145,6 +146,10 @@ class ImageProcessor:
                               registration_class=row["registration_class"],
                               registration_date=row["registration_date"],
                               count=row["count"])
+        self.create_registrations()
+
+    def create_registrations(self):
+        process_data(self.db)
         self.db.close()
 
 
