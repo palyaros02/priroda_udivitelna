@@ -3,7 +3,7 @@ from utils.logger import Logger
 from db.db import DB
 from configs.config import MainConfig
 from confz import BaseConfig, FileSource
-from registration_separation import process_data, calculate_minutes_difference
+from registration.registration_separation import process_data, calculate_minutes_difference
 # other imports
 from pathlib import Path
 import os
