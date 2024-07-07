@@ -1,4 +1,5 @@
 traps/
+traps2/
 
 __pycache__/
 **/__pycache__
@@ -16,3 +17,6 @@ table_agg.csv
 table_final.csv
 
 *.sqlite
+test_data_Minprirodi/.DS_Store
+test_data_Minprirodi/photo_dt.csv
+logs/log.txt

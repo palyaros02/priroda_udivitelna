@@ -1,4 +1,5 @@
 # local imports
+from sympy import Parabola
 from utils.logger import Logger
 from db.db import DB
 from configs.config import MainConfig
@@ -16,6 +17,8 @@ from ultralytics.engine.results import Results
 from torchvision.transforms.functional import normalize
 import cv2
 from PIL import Image
+from registration.registration_separation import process_data, calculate_minutes_difference
+
 
 L = Logger()
 
@@ -31,9 +34,22 @@ class ImageProcessor:
         self.classificator = torch.load(self.config.classificator.weights).to(self.device)
 
         self.mapping = self.open_mapping(self.config.mapping)
-        self.pathes_to_imgs = [i for i in Path(self.config.src_dir).glob("*")
-                               if i.suffix.lower() in [".jpeg", ".jpg", ".png"]]
-        self.folder_name = Path(self.config.src_dir).name.split("/")[-1]
+
+        src_dir = Path(self.config.src_dir)
+        # print(src_dir)
+        # print([i.name for i in src_dir.glob("*")])
+        # for every folder in src_dir
+        if src_dir.is_dir():
+            self.folder_names = [i.name for i in src_dir.glob("*") if i.is_dir()]
+            pathes_to_imgs = []
+            for folder in self.folder_names:
+
+                # print ((src_dir / folder))
+                # print([i for i in (src_dir / folder).glob("*")])
+                imgs = [i for i in (src_dir / folder).glob("*") if i.suffix.lower() in [".jpg", ".jpeg", ".png"]]
+                print(f"Folder {folder} contains {len(imgs)} images.")
+                pathes_to_imgs.extend(imgs)
+            self.pathes_to_imgs = pathes_to_imgs
 
     # function to read a file
     def open_mapping(self, path_mapping: str) -> dict[int, str]:
@@ -56,13 +72,13 @@ class ImageProcessor:
                     crop = crop.unsqueeze(0)
                     crop = normalize(crop.float(), mean=self.mean, std=self.std)
                     crops_per_img.append(crop)
-                dict_crops[Path(res_per_img.path).name] = torch.cat(crops_per_img)
+                dict_crops[res_per_img.path] = torch.cat(crops_per_img)
         return dict_crops
 
     # doing predictions, call to start processing
     def process_images(self) -> None:
         if not self.pathes_to_imgs:
-            self.logger.info("No images to process.")
+            L.info("No images to process.")
             return
 
         list_predictions = []
@@ -101,8 +117,11 @@ class ImageProcessor:
                        dict_crops: dict[str, torch.Tensor],
                        exifs: list) -> list:
         list_predictions = []
-        for img_name, batch_images_cls in dict_crops.items():
-            exif = exifs[self.pathes_to_imgs.index(Path(self.config.src_dir) / img_name)]
+        # print(dict_crops)
+        for img_path, batch_images_cls in dict_crops.items():
+            folder_name = Path(img_path).parent.name
+            img_relative_path = Path(self.config.src_dir) / folder_name / Path(img_path).name
+            exif = exifs[self.pathes_to_imgs.index(img_relative_path)]
             num_packages_cls = np.ceil(len(batch_images_cls) /
                                        self.config.classificator.batch_size).astype(np.int32)
             for j in range(num_packages_cls):
@@ -115,10 +134,10 @@ class ImageProcessor:
                 top_class_idx = top_class_idx.cpu().numpy().ravel()
                 class_names = [self.mapping[top_class_idx[idx]] for idx, _
                                in enumerate(batch_images_cls)]
-                list_predictions.extend([[self.folder_name,
+                list_predictions.extend([[folder_name,
                                           name, cls, prob, '--', exif]
                                          for name, cls, prob
-                                         in zip(repeat(img_name, len(class_names)), class_names, top_p)])
+                                         in zip(repeat(Path(img_path).name, len(class_names)), class_names, top_p)])
         return list_predictions
 
     # saving data to local database
@@ -145,6 +164,10 @@ class ImageProcessor:
                               registration_class=row["registration_class"],
                               registration_date=row["registration_date"],
                               count=row["count"])
+        self.create_registrations()
+
+    def create_registrations(self):
+        process_data(self.db)
         self.db.close()
 
 

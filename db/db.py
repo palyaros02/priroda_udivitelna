@@ -27,7 +27,7 @@ class Registration(Base):
     class_name = Column(String)
     date_registration_start = Column(String) # fixed class_predict
     date_registration_end = Column(String)
-    max_count = Column(Integer)
+    count = Column(Integer)
 
     #it is parent in many-to-one relationship
     images = relationship("Image", back_populates="registration", cascade="all, delete-orphan", passive_deletes=True)
@@ -55,7 +55,7 @@ class DB:
         date_registration_start = datetime.strptime(date_registration_start, date_format)
         date_registration_end = datetime.strptime(date_registration_end, date_format)
 
-        registration = Registration(folder_name=folder_name, class_name=class_name, date_registration_start=date_registration_start, date_registration_end=date_registration_end, max_count=max_count)
+        registration = Registration(folder_name=folder_name, class_name=class_name, date_registration_start=date_registration_start, date_registration_end=date_registration_end, count=max_count)
         self.session.add(registration)
         self.session.commit()
         return registration.id

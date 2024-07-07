@@ -1,4 +1,4 @@
-src_dir: "data/traps/1"
+src_dir: "data/traps/"
 mapping: "model/class_map_animal.txt"
 device: cuda
 dst_save_table: "data/table.csv"

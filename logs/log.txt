@@ -1,3 +1,5 @@
 2024-07-06 08:36:57.327 | INFO     | utils.logger:info:20 - Hello, world!
 2024-07-06 08:36:57.328 | ERROR    | utils.logger:error:23 - Hello, world!
 2024-07-06 08:36:57.328 | DEBUG    | utils.logger:debug:26 - Hello, world!
+2024-07-07 10:04:05.518 | INFO     | utils.logger:info:17 - No images to process.
+2024-07-07 10:06:42.244 | INFO     | utils.logger:info:17 - No images to process.
